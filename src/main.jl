@@ -8,7 +8,7 @@ function main()
     filename = joinpath(@__DIR__, "..", "instances", "berlin52.tsp")
 
     # cria objeto Data e lê a instância
-    data = Data(2, filename)   # 2 parâmetros = nome do arquivo + instância
+    data = Data(2, filename)
     read!(data)
 
     println("Instância: ", getInstanceName(data))
@@ -16,66 +16,59 @@ function main()
 
     assignment, cost = hungarian(data.distMatrix)
 
-    # Mostrar a matriz
-    # println("Matriz de matching:")
-    # println(assignment)
-    # println("Custo", cost)
+    println("Custo inicial do Hungarian: ", cost)    
 
-    matrix = zeros(data.dimension, data.dimension)
-    # print(matrix)
-
+    matrix = zeros(Int, data.dimension, data.dimension)
     for i in 1:data.dimension
         j = assignment[i]
         matrix[i, j] = 1
     end
-    # print(matrix)
 
-    #criar vetor interno de tour
-    tour = Vector{Int64}(undef, 0)
+    # lista de subtours
+    subtours = Vector{Vector{Int64}}()
 
-    # lista de vetores visitados
+    # lista de vértices visitados
+    visited = Vector{Int64}()
 
-    visited = Vector{Int64}(undef, 0)
+    # lista de vértices não visitados
+    notVisited = collect(1:data.dimension)
 
-    #lista de vetores não visitados
+    # enquanto houver vértices não visitados
+    while !isempty(notVisited)
+        tour = Int[]  # reinicia o tour atual
+        i = notVisited[1]          # pega o primeiro vértice não visitado
+        push!(tour, i)             # adiciona ao tour
+        push!(visited, i)          # marca como visitado
+        popfirst!(notVisited)      # remove de não visitados
 
-    notVisited = Vector{Int64}(undef, 0)
+        # percorre até voltar ao início
+        while true
+            j = assignment[i]      # vértice atribuído ao i
+            push!(tour, j)         # adiciona no tour
+            if !(j in visited)     # se ainda não foi visitado
+                push!(visited, j)
+                deleteat!(notVisited, findfirst(==(j), notVisited))
+            end
+            i = j
+            if j == tour[1]        # se voltou ao início
+                break
+            end
+        end
 
-    #Preenche vertices não visitados
-
-    for i in 1:data.dimension
-        push!(notVisited, i)
+        push!(subtours, tour)      # guarda o subtour encontrado
     end
 
-    # print("visited", visited)
-    # print("notVisited", notVisited)
+    # imprime subtours
+    println("\nSubtours encontrados:")
+    for (k, st) in enumerate(subtours)
+        println("  Subtour $k: ", st)
+    end
 
-    n = length(notVisited)
-
-    # while n > 0
-        i = notVisited[begin]
-        popfirst!(notVisited)
-        push!(visited, i)
-
-        print("visited", visited)
-        print("notVisited", notVisited)
-    # end
-
-    # pegue o primeiro vertice da lista de vertices não visitados
-    # retire dos não visitados
-    # adicione um vertice no tour
-    
-    # para os demais vertices :
-    #   se tiver atribuido: 
-    #     adicione  j nos vertices visitados
-    #     remova j dos não visitados
-    #     adicione no tour
-    #     fazer i = j
-
-    #   se a posição atual for igual o vertice inicial do tour
-    #     adicione o tour no subtours
-    #     limpe o tour
-
+    if length(subtours) == 1
+        println("\nSolução é um tour o único! Custo = $cost")
+    else
+        println("\nExistem $(length(subtours)) subtours. Próximo passo: eliminar subtours (BnB).")
+    end
 end
 
 main()
