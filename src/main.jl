@@ -4,6 +4,14 @@ using JuMP
 using GLPK
 using Hungarian
 
+mutable struct Node
+    forbidden_arcs::Vector{Tuple{Int,Int}}   # lista de arcos proibidos no nó
+    subtours::Vector{Vector{Int}}            # conjunto de subtours da solução
+    lower_bound::Float64                     # custo total da solução do húngaro
+    chosen::Int                              # índice do menor subtour
+    feasible::Bool                           # indica se a solução é viável
+end
+
 function main()
     filename = joinpath(@__DIR__, "..", "instances", "berlin52.tsp")
 
@@ -64,10 +72,28 @@ function main()
         println("  Subtour $k: ", st)
     end
 
-    if length(subtours) == 1
-        println("\nSolução é um tour o único! Custo = $cost")
+    # identifica o menor subtour (por tamanho)
+    subtour_lengths = [length(st) for st in subtours]
+    chosen_idx = argmin(subtour_lengths)
+
+    # cria o nó raiz da árvore
+    node = Node(
+        [],                         # sem arcos proibidos inicialmente
+        subtours,                   # subtours encontrados
+        cost,                       # custo do Hungarian
+        chosen_idx,                 # índice do menor subtour
+        length(subtours) == 1       # viável se for apenas um tour
+    )
+
+    println("\nNó criado:")
+    println("  Custo (LB): ", node.lower_bound)
+    println("  Subtour escolhido: ", node.subtours[node.chosen])
+    println("  Viável: ", node.feasible)
+
+    if node.feasible
+        println("\nSolução é um tour único! Custo = $(node.lower_bound)")
     else
-        println("\nExistem $(length(subtours)) subtours. Próximo passo: eliminar subtours (BnB).")
+        println("\nExistem $(length(node.subtours)) subtours. Próximo passo: eliminar subtours (BnB).")
     end
 end
 
