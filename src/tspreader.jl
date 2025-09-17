@@ -16,7 +16,7 @@ mutable struct Data
     function Data(qtParam::Int, instance::String)
         if qtParam < 2
             error("Missing parameters\nUsage: ./exeLaRP [Instance]")
-        elseif qtParam > 4
+        elseif qtParam > 2
             error("Too many parameters\nUsage: ./exeLaRP [Instance] [Upper Bound] [Search method]")
         end
         new(instance, qtParam, -1, false, Float64[], Float64[], zeros(0,0))
@@ -106,24 +106,19 @@ function read!(data::Data)
         data.explicitCoord = true
         section_start = findfirst(x -> occursin("NODE_COORD_SECTION", x), file_lines)
 
-        # Filtra apenas linhas com 3 números válidos (ignora EOF e linhas inválidas)
         coord_lines = filter(line -> occursin(r"^\s*\d+\s+\d+(\.\d+)?\s+\d+(\.\d+)?\s*$", line), file_lines[(section_start+1):end])
 
-        # Inicializa vetores
         data.xCoord = zeros(data.dimension)
         data.yCoord = zeros(data.dimension)
 
-        # Preenche xCoord e yCoord
         for (i, line) in enumerate(coord_lines)
             tokens = split(line)
             data.xCoord[i] = parse(Float64, tokens[2])
             data.yCoord[i] = parse(Float64, tokens[3])
         end
 
-        # Calcula latitude e longitude se GEO, senão zeros
         latitude, longitude = typeProblem == "GEO" ? CalcLatLong(data.xCoord, data.yCoord, data.dimension) : (zeros(data.dimension), zeros(data.dimension))
 
-        # Preenche a matriz de distâncias
         for i in 1:data.dimension, j in 1:data.dimension
             if i == j
                 data.distMatrix[i,j] = INFINITE

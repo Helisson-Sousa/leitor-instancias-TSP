@@ -11,6 +11,7 @@ function branch_and_bound_dfs(data::Data; initial_upper=1e9, verbose=true)
     end
 
     while !isempty(tree)
+        println("============================================= tamanho da arvore= $(length(tree)) ")
         node = pop!(tree)     
 
         if node.lower_bound > upper_bound
@@ -51,5 +52,5 @@ function branch_and_bound_dfs(data::Data; initial_upper=1e9, verbose=true)
         end
     end
 
-    return best_node, upper_bound
+    return best_node, lower_bound
 end

@@ -4,7 +4,7 @@ include("node.jl")
 include("bnb.jl")    
 
 function main()
-    filename = joinpath(@__DIR__, "..", "instances", "berlin52.tsp")
+    filename = joinpath(@__DIR__, "..", "instances", "bays29Ajustada.tsp")
     data = Data(2, filename)
     read!(data)
 
@@ -17,10 +17,8 @@ function main()
         println("\nNenhuma solução encontrada (UB = $ub)")
     else
         println("\nSolução encontrada UB = $ub")
-        println("Exemplo de subtour: ", best_node.subtours[1])
     end
 end
 
-if abspath(PROGRAM_FILE) == @__FILE__
-    main()
-end
+
+main()
