@@ -4,7 +4,7 @@ include("node.jl")
 include("bnb.jl")    
 
 function main()
-    filename = joinpath(@__DIR__, "..", "instances", "dantzig42.tsp")
+    filename = joinpath(@__DIR__, "..", "instances", "burma14.tsp")
     data = Data(2, filename)
     read!(data)
 
