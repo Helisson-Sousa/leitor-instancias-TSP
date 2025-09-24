@@ -24,15 +24,14 @@ mutable struct Data
 end
 
 # ---------------------- Funções Auxiliares ----------------------
-function CalcDistEuc(X, Y, I, J)
-    sqrt((X[I]-X[J])^2 + (Y[I]-Y[J])^2)
+function CalcDistEuc(x, y, I, J)
+    return Int(floor(sqrt((x[I]-x[J])^2 + (y[I]-y[J])^2) + 0.5))
 end
 
-function CalcDistAtt(X, Y, I, J)
-    rij = sqrt(((X[I]-X[J])^2 + (Y[I]-Y[J])^2)/10)
+function CalcDistAtt(x, y, I, J)
+    rij = sqrt(((x[I]-x[J])^2 + (y[I]-y[J])^2)/10)
     tij = floor(rij + 0.5)
-    dij = tij < rij ? tij + 1 : tij
-    dij
+    return tij < rij ? tij + 1 : tij
 end
 
 function CalcLatLong(X, Y, n)
@@ -52,11 +51,12 @@ end
 
 function CalcDistGeo(latit, longit, I, J)
     RRR = 6378.388
-    q1 = cos(longit[I]-longit[J])
-    q2 = cos(latit[I]-latit[J])
-    q3 = cos(latit[I]+latit[J])
-    Int(RRR * acos(0.5*((1+q1)*q2 - (1-q1)*q3)) + 1.0)
+    q1 = cos(longit[I] - longit[J])
+    q2 = cos(latit[I] - latit[J])
+    q3 = cos(latit[I] + latit[J])
+    return floor(Int, RRR * acos(0.5*((1 + q1) * q2 - (1 - q1) * q3)) + 1)
 end
+
 
 # ---------------------- Métodos Data ----------------------
 function read!(data::Data)
@@ -106,19 +106,31 @@ function read!(data::Data)
         data.explicitCoord = true
         section_start = findfirst(x -> occursin("NODE_COORD_SECTION", x), file_lines)
 
-        coord_lines = filter(line -> occursin(r"^\s*\d+\s+\d+(\.\d+)?\s+\d+(\.\d+)?\s*$", line), file_lines[(section_start+1):end])
+        # Ler todas as linhas de coordenadas até EOF ou linha vazia
+        coord_lines = String[]
+        for line in file_lines[(section_start+1):end]
+            line = strip(line)
+            if line == "EOF" || isempty(line)
+                break
+            end
+            push!(coord_lines, line)
+        end
 
-        data.xCoord = zeros(data.dimension)
-        data.yCoord = zeros(data.dimension)
+        if length(coord_lines) != data.dimension
+            error("Número de coordenadas lidas não corresponde à dimensão")
+        end
 
+        # Preencher xCoord e yCoord
         for (i, line) in enumerate(coord_lines)
             tokens = split(line)
             data.xCoord[i] = parse(Float64, tokens[2])
             data.yCoord[i] = parse(Float64, tokens[3])
         end
 
+        # Calcular latitude e longitude para GEO
         latitude, longitude = typeProblem == "GEO" ? CalcLatLong(data.xCoord, data.yCoord, data.dimension) : (zeros(data.dimension), zeros(data.dimension))
 
+        # Preencher matriz de distâncias
         for i in 1:data.dimension, j in 1:data.dimension
             if i == j
                 data.distMatrix[i,j] = INFINITE
@@ -137,7 +149,6 @@ function read!(data::Data)
     else
         error("Tipo $typeProblem não suportado")
     end
-
 end
 
 # ---------------------- Funções de Apoio ----------------------

@@ -52,5 +52,5 @@ function branch_and_bound_dfs(data::Data; initial_upper=1e9, verbose=true)
         end
     end
 
-    return best_node, lower_bound
+    return best_node, upper_bound
 end

@@ -4,7 +4,7 @@ include("node.jl")
 include("bnb.jl")    
 
 function main()
-    filename = joinpath(@__DIR__, "..", "instances", "bays29Ajustada.tsp")
+    filename = joinpath(@__DIR__, "..", "instances", "dantzig42.tsp")
     data = Data(2, filename)
     read!(data)
 
@@ -19,6 +19,5 @@ function main()
         println("\nSolução encontrada UB = $ub")
     end
 end
-
 
 main()
