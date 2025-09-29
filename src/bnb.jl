@@ -12,7 +12,10 @@ function branch_and_bound_dfs(data::Data; initial_upper=1e9, verbose=true)
 
     while !isempty(tree)
         println("============================================= tamanho da arvore= $(length(tree)) ")
-        node = pop!(tree)     
+        lb_values = [n.lower_bound for n in tree]           
+        idx = argmin(lb_values)                            
+        node = tree[idx]                                    
+        deleteat!(tree, idx)           
 
         if node.lower_bound > upper_bound
             if verbose
