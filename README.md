@@ -38,6 +38,6 @@ Rode o código principal:
 
 julia main.jl
 
-🎯 Objetivo acadêmico
+## 🎯 Objetivo acadêmico
 
 Este projeto foi desenvolvido na linguagem Julia para a disciplina Otimização Discreta, com o objetivo de implementar e comparar os métodos Branch and Bound e Best Bound.
