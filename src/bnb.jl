@@ -5,22 +5,23 @@ function branch_and_bound_dfs(data::Data; initial_upper=1e9, verbose=true)
     tree = [root]              
     upper_bound = initial_upper
     best_node = nothing
+    gap = Inf
 
-    if verbose
-        println("Root LB=$(root.lower_bound) feasible=$(root.feasible) #subtours=$(length(root.subtours))")
-    end
+    while !isempty(tree) && gap > 0.001
+        lb_values = [n.lower_bound for n in tree]
+        dual = minimum(lb_values) 
+        primal = upper_bound 
+        gap = max((primal - dual) / primal * 100, 0.0)
 
-    while !isempty(tree)
-        println("============================================= tamanho da arvore= $(length(tree)) ")
-        lb_values = [n.lower_bound for n in tree]           
+        if verbose
+            println("Tree size=$(length(tree)) | Primal=$(primal) | Dual=$(dual) | Gap=$(round(gap, digits=2))%")
+        end
+
         idx = argmin(lb_values)                            
         node = tree[idx]                                    
         deleteat!(tree, idx)           
 
         if node.lower_bound > upper_bound
-            if verbose
-                println("Pruned node LB=$(node.lower_bound) > UB=$(upper_bound)")
-            end
             continue
         end
 
@@ -28,9 +29,6 @@ function branch_and_bound_dfs(data::Data; initial_upper=1e9, verbose=true)
             if node.lower_bound < upper_bound
                 upper_bound = node.lower_bound
                 best_node = node
-                if verbose
-                    println("New incumbent UB=$(upper_bound)")
-                end
             end
             continue
         end
@@ -44,13 +42,6 @@ function branch_and_bound_dfs(data::Data; initial_upper=1e9, verbose=true)
 
             if n.lower_bound <= upper_bound
                 push!(tree, n)
-                if verbose
-                    println("Added child forbidding $(forbidden_arc) -> LB=$(n.lower_bound) feasible=$(n.feasible)")
-                end
-            else
-                if verbose
-                    println("Discarded child (LB=$(n.lower_bound) > UB=$(upper_bound)) forbidding $(forbidden_arc)")
-                end
             end
         end
     end
