@@ -5,12 +5,13 @@ if !isdefined(Main, :Node)
     mutable struct Node
         forbidden_arcs::Vector{Tuple{Int,Int}}   
         subtours::Vector{Vector{Int}}            
-        lower_bound::Float64                    
+        lower_bound::Float64
+        upper_bound::Float64                    
         chosen::Int                              
         feasible::Bool                           
     end
 
-    Node() = Node(Vector{Tuple{Int,Int}}(), Vector{Vector{Int}}(), 0.0, 0, false)
+    Node() = Node(Vector{Tuple{Int,Int}}(), Vector{Vector{Int}}(), 0.0, 0.0, 0, false)
 end
 
 if !isdefined(Main, :BIG_COST)

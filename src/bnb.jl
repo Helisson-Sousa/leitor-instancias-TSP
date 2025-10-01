@@ -1,4 +1,7 @@
 function branch_and_bound_dfs(data::Data; initial_upper=1e9, verbose=true)
+
+    print(data)
+
     root = Node()
     updateNode!(root, data)
 
@@ -9,7 +12,7 @@ function branch_and_bound_dfs(data::Data; initial_upper=1e9, verbose=true)
 
     while !isempty(tree) && gap > 0.001
         lb_values = [n.lower_bound for n in tree]
-        dual = minimum(lb_values) 
+        dual = maximum(lb_values) 
         primal = upper_bound 
         gap = max((primal - dual) / primal * 100, 0.0)
 
