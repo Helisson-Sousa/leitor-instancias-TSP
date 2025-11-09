@@ -38,7 +38,7 @@ function branch_and_bound_dfs(data::Data; initial_upper=1e9, verbose=true)
 
         chosen_subtour = node.subtours[node.chosen]
         for i in 1:(length(chosen_subtour)-1)
-            n = Node(copy(node.forbidden_arcs), [], 0.0, 0, false)
+            n = Node(copy(node.forbidden_arcs), [], 0.0, 0.0, 0, false)
             forbidden_arc = (chosen_subtour[i], chosen_subtour[i+1])
             push!(n.forbidden_arcs, forbidden_arc)
             updateNode!(n, data)
