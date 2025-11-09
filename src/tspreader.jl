@@ -104,7 +104,6 @@ function read!(data::Data)
         data.explicitCoord = true
         section_start = findfirst(x -> occursin("NODE_COORD_SECTION", x), file_lines)
 
-        # Ler todas as linhas de coordenadas até EOF ou linha vazia
         coord_lines = String[]
         for line in file_lines[(section_start+1):end]
             line = strip(line)
