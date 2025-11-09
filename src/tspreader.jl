@@ -60,7 +60,6 @@ end
 
 # ---------------------- Métodos Data ----------------------
 function read!(data::Data)
-    # Ler todas as linhas
     file_lines = readlines(data.instanceName)
 
     # ----------------- DIMENSION -----------------
@@ -77,7 +76,6 @@ function read!(data::Data)
     end
     typeProblem = uppercase(strip(split(file_lines[ew_line], ":")[end]))
 
-    # Inicializar vetores e matriz
     data.xCoord = zeros(data.dimension)
     data.yCoord = zeros(data.dimension)
     data.distMatrix = zeros(data.dimension, data.dimension)
@@ -106,7 +104,6 @@ function read!(data::Data)
         data.explicitCoord = true
         section_start = findfirst(x -> occursin("NODE_COORD_SECTION", x), file_lines)
 
-        # Ler todas as linhas de coordenadas até EOF ou linha vazia
         coord_lines = String[]
         for line in file_lines[(section_start+1):end]
             line = strip(line)
@@ -120,17 +117,14 @@ function read!(data::Data)
             error("Número de coordenadas lidas não corresponde à dimensão")
         end
 
-        # Preencher xCoord e yCoord
         for (i, line) in enumerate(coord_lines)
             tokens = split(line)
             data.xCoord[i] = parse(Float64, tokens[2])
             data.yCoord[i] = parse(Float64, tokens[3])
         end
 
-        # Calcular latitude e longitude para GEO
         latitude, longitude = typeProblem == "GEO" ? CalcLatLong(data.xCoord, data.yCoord, data.dimension) : (zeros(data.dimension), zeros(data.dimension))
 
-        # Preencher matriz de distâncias
         for i in 1:data.dimension, j in 1:data.dimension
             if i == j
                 data.distMatrix[i,j] = INFINITE

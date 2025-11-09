@@ -18,7 +18,6 @@ if !isdefined(Main, :BIG_COST)
 end
 
 function updateNode!(node::Node, data::Data)
-    # 1. Copia a matriz de distâncias e aplica arcos proibidos
     costMatrix = copy(data.distMatrix)
     for (i, j) in node.forbidden_arcs
         if 1 ≤ i ≤ size(costMatrix,1) && 1 ≤ j ≤ size(costMatrix,2)
@@ -26,11 +25,9 @@ function updateNode!(node::Node, data::Data)
         end
     end
 
-    # 2. Rodar o algoritmo húngaro
     assignment, cost = hungarian(costMatrix)
     node.lower_bound = Float64(cost)
 
-    # 3. Construir matriz binária A (0/1)
     n = size(costMatrix, 1)
     A = zeros(Int, n, n)
     for i in 1:n
@@ -40,7 +37,6 @@ function updateNode!(node::Node, data::Data)
         end
     end
 
-    # 4. Detectar subtours
     subtours = Vector{Vector{Int}}()
     notVisited = collect(1:n)
 
@@ -51,7 +47,7 @@ function updateNode!(node::Node, data::Data)
         deleteat!(notVisited, 1)
 
         while true
-            j = findfirst(x -> x == 1, A[i, :])  # próximo vértice da linha i
+            j = findfirst(x -> x == 1, A[i, :]) 
             if j === nothing
                 break
             end
@@ -63,7 +59,7 @@ function updateNode!(node::Node, data::Data)
             end
 
             i = j
-            if j == tour[1]   # ciclo fechado
+            if j == tour[1] 
                 break
             end
         end
@@ -73,11 +69,9 @@ function updateNode!(node::Node, data::Data)
 
     node.subtours = subtours
 
-    # 5. Escolher o menor subtour
     subtour_lengths = [length(st) for st in subtours]
     node.chosen = argmin(subtour_lengths)
 
-    # 6. Verificar viabilidade (somente 1 subtour)
     node.feasible = (length(subtours) == 1)
 end
 
